@@ -92,9 +92,9 @@ d3.json("./testData.json", function(data) {
   //   .range([ 2, 30]);
 
   // // Add a scale for bubble color
-  // var myColor = d3.scaleOrdinal()
-  //   .domain(["Asia", "Europe", "Americas", "Africa", "Oceania"])
-  //   .range(d3.schemeSet1);
+  var myColor = d3.scaleOrdinal()
+    .domain(["sports", "food", "politics", "styles"])
+    .range(d3.schemeSet1);
 
 
   // // ---------------------------//
@@ -158,16 +158,16 @@ d3.json("./testData.json", function(data) {
   // // ---------------------------//
 
   // // Add dots
-  // svg.append('g')
-  //   .selectAll("dot")
-  //   .data(data)
-  //   .enter()
-  //   .append("circle")
-  //     .attr("class", function(d) { return "bubbles " + d.continent })
-  //     .attr("cx", function (d) { return x(d.gdpPercap); } )
-  //     .attr("cy", function (d) { return y(d.lifeExp); } )
-  //     .attr("r", function (d) { return z(d.pop); } )
-  //     .style("fill", function (d) { return myColor(d.continent); } )
+  svg.append('g')
+    .selectAll("dot")
+    .data(data)
+    .enter()
+    .append("circle")
+      .attr("class", function(d) { return "bubbles " + d.topic })
+      .attr("cx", function (d) { return x(d.x); } )
+      .attr("cy", function (d) { return y(d.y); } )
+      .attr("r", function (d) { return 15; } )
+      .style("fill", function (d) { return myColor(d.topic); } )
   //   // -3- Trigger the functions for hover
   //   .on("mouseover", showTooltip )
   //   .on("mousemove", moveTooltip )
