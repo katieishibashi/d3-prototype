@@ -45,39 +45,46 @@ var svg = d3.select("#my_dataviz")
 d3.json("./testData.json", function(data) {
 
   console.log(data);
+  function getMaxValue(value) {
+    return Math.max.apply(Math, data.map(function(obj) { return obj[value]; })) || 0;
+  }
+  function getMinValue(value) {
+    return Math.min.apply(Math, data.map(function(obj) { return obj[value]; })) || 0;
+  }
+  console.log(getMinValue("x"),getMaxValue("x"),getMinValue("y"),getMaxValue("y"));
   // ---------------------------//
   //       AXIS  AND SCALE      //
   // ---------------------------//
 
   // Add X axis
-  // var x = d3.scaleLinear()
-  //   .domain([0, 45000])
-  //   .range([ 0, width ]);
-  // svg.append("g")
-  //   .attr("transform", "translate(0," + height + ")")
-  //   .call(d3.axisBottom(x).ticks(3));
+  var x = d3.scaleLinear()
+    .domain([getMinValue("x"), getMaxValue("x")])
+    .range([ 0, width ]);
+  svg.append("g")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(x).ticks(3));
 
   // // Add X axis label:
-  // svg.append("text")
-  //     .attr("text-anchor", "end")
-  //     .attr("x", width)
-  //     .attr("y", height+50 )
-  //     .text("Gdp per Capita");
+  svg.append("text")
+      .attr("text-anchor", "end")
+      .attr("x", width)
+      .attr("y", height+50 )
+      .text("X Value");
 
   // // Add Y axis
-  // var y = d3.scaleLinear()
-  //   .domain([35, 90])
-  //   .range([ height, 0]);
-  // svg.append("g")
-  //   .call(d3.axisLeft(y));
+  var y = d3.scaleLinear()
+    .domain([getMinValue("y"), getMaxValue("y")])
+    .range([ height, 0]);
+  svg.append("g")
+    .call(d3.axisLeft(y));
 
   // // Add Y axis label:
-  // svg.append("text")
-  //     .attr("text-anchor", "end")
-  //     .attr("x", 0)
-  //     .attr("y", -20 )
-  //     .text("Life expectancy")
-  //     .attr("text-anchor", "start")
+  svg.append("text")
+      .attr("text-anchor", "end")
+      .attr("x", 0)
+      .attr("y", -20 )
+      .text("Y value")
+      .attr("text-anchor", "start")
 
   // // Add a scale for bubble size
   // var z = d3.scaleSqrt()
