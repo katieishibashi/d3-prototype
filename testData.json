@@ -1,0 +1,52 @@
+[
+{
+    "url": "http://www.nytimes.com", 
+    "headline": "Sportsballs", 
+    "x": 0.5,
+    "y": 2.1,
+    "topic": "sports"
+},
+{
+    "url": "http://www.nytimes.com", 
+    "headline": "EATING", 
+    "x": 5,
+    "y": 1,
+    "topic": "food"
+},
+{
+    "url": "http://www.nytimes.com", 
+    "headline": "POLITICS", 
+    "x": 3,
+    "y": -1,
+    "topic": "politics"
+},
+{
+    "url": "http://www.nytimes.com", 
+    "headline": "Cats", 
+    "x": 5,
+    "y": 8,
+    "topic": "styles"
+},
+{
+    "url": "http://www.nytimes.com", 
+    "headline": "Pizza pizza", 
+    "x": 5,
+    "y": 2,
+    "topic": "food"
+},
+{
+    "url": "http://www.nytimes.com", 
+    "headline": "Tacos tacos", 
+    "x": 6,
+    "y": 3,
+    "topic": "food"
+},
+{
+    "url": "http://www.nytimes.com", 
+    "headline": "Trees", 
+    "x": -4,
+    "y": -3,
+    "topic": "science"
+}
+
+]
