@@ -1,16 +1,21 @@
 <!-- Code from d3-graph-gallery.com -->
 <!DOCTYPE html>
+<head>
 <meta charset="utf-8">
 <title>Hello</title>
 <!-- Load d3.js -->
 <script src="https://d3js.org/d3.v4.js"></script>
 <!-- Load color scale -->
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+</head>
+<body>
 <!-- Create a div where the graph will take place -->
 <h1>Simple d3 bubble graph</h1>
 <div id="root" class="visible"></div>
-<button onclick="createD3Map(simpleTestData)">See map with simple data</button>
-<button onclick="createD3Map(testDataWithZ)">See map with more Complex data</button>
+<div class="buttonContainer">
+  <button onclick="createD3Map(simpleTestData)">See chart with simple data</button>
+  <button onclick="createD3Map(testDataWithZ)">See chart with more Complex data</button>
+</div>
 <!-- A bit of CSS: change stroke color of circle on hover (white -> black) -->
 <style>
   .bubbles {
@@ -38,15 +43,30 @@
     display: inline-block;
     position: relative;
     width: 100%;
-    padding-bottom: 100%; /* aspect ratio */
+    padding-bottom: 75%; /* aspect ratio */
     vertical-align: top;
     overflow: hidden;
+    max-width:700px;
+    min-height:320px;
+}
+@media (min-width:700px){
+  .svg-container {
+    padding-bottom:50%;
+  }
 }
 .svg-content-responsive {
     display: inline-block;
     position: absolute;
     top: 10px;
     left: 0;
+}
+@media (min-width:700px){
+.buttonContainer{
+ position:absolute;
+ max-width:150px;
+ left: calc(700px - 150px);
+ top:40px;
+}
 }
 </style>
 <script>
@@ -74,7 +94,7 @@
     setTimeout(function(){ isTransitioning = false; toggleClasses();}, 600);
   
   // set the dimensions and margins of the graph
-  var margin = {top: 40, right: 150, bottom: 60, left: 30},
+  var margin = {top: 40, right: 150, bottom: 30, left: 20},
       width = 500 - margin.left - margin.right,
       height = 420 - margin.top - margin.bottom;
   
@@ -84,12 +104,13 @@
    .classed("svg-container", true) //container class to make it responsive
    .append("svg")
    .attr("preserveAspectRatio", "xMinYMin meet")
-   .attr("viewBox", "0 0 600 400")
+   .attr("viewBox", "0 0 600 435")
    //class to make it responsive
    .classed("svg-content-responsive", true)
     .append("g")
       .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
+
   d3.json(url, function(data) {
   
     console.log(data);
@@ -116,7 +137,7 @@
     svg.append("text")
         .attr("text-anchor", "end")
         .attr("x", width)
-        .attr("y", height+50 )
+        .attr("y", height+40 )
         .text("X Value");
   
     // // Add Y axis
@@ -142,7 +163,7 @@
   
     // // Add a scale for bubble color
     var myColor = d3.scaleOrdinal()
-      .domain(["sports", "food", "politics", "styles"])
+      .domain(["sports", "food", "politics", "styles", "science"])
       .range(d3.schemeSet1);
   
   
@@ -217,7 +238,7 @@
         .attr("class", function(d) { return "bubbles " + d.topic })
         .attr("cx", function (d) { return x(d.x); } )
         .attr("cy", function (d) { return y(d.y); } )
-        .attr("r", function (d) { return z(d.z || standardSize); } )
+        .attr("r", function (d) { return z(d.z) || standardSize; } )
         .style("fill", function (d) { return myColor(d.topic); } )
     //   // -3- Trigger the functions for hover
       .on("mouseover", showTooltip )
@@ -310,3 +331,4 @@
   }
   createD3Map(simpleTestData);
 </script>
+</body>
