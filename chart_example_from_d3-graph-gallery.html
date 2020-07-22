@@ -8,7 +8,7 @@
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 <!-- Create a div where the graph will take place -->
 <h1>Simple d3 bubble graph</h1>
-<div id="my_dataviz" class="visible"></div>
+<div id="root" class="visible"></div>
 <button onclick="createD3Map(simpleTestData)">See map with simple data</button>
 <button onclick="createD3Map(testDataWithZ)">See map with more Complex data</button>
 <!-- A bit of CSS: change stroke color of circle on hover (white -> black) -->
@@ -34,39 +34,59 @@
           opacity: 0;
           /* transition: visibility 0s 0.3s, opacity 0.3s linear; */
   }   
+  .svg-container {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%; /* aspect ratio */
+    vertical-align: top;
+    overflow: hidden;
+}
+.svg-content-responsive {
+    display: inline-block;
+    position: absolute;
+    top: 10px;
+    left: 0;
+}
 </style>
 <script>
   var simpleTestData = './testData.json';
   var testDataWithZ = './testDataWithZ.json';
-  createD3Map(simpleTestData);
+  var standardSize = 15;
   var isTransitioning = false;
+  var $rootDiv = document.querySelector("#root");
 
   function toggleClasses() {
-    document.querySelector("#my_dataviz").classList.toggle("hidden");
-    document.querySelector("#my_dataviz").classList.toggle("visible");
+    $rootDiv.classList.toggle("hidden");
+    $rootDiv.classList.toggle("visible");
   }
-  //Read the data
-  function createD3Map(url){
-      // Wipe out the map we had
-  if (isTransitioning) return;
 
+  //Load D3
+  function createD3Map(url){
+  // Ignore if we're mid-transition
+  if (isTransitioning) return;
+  // Otherwise, set isTransitioning to true and hide the map
     isTransitioning = true;
     toggleClasses();
-    document.querySelector("#my_dataviz").innerHTML="";
+    // Wipe out the map we had
+    $rootDiv.innerHTML="";
+    //When the transition is over, fade the map back in 
     setTimeout(function(){ isTransitioning = false; toggleClasses();}, 600);
   
-
-    var standardSize = 15;
   // set the dimensions and margins of the graph
   var margin = {top: 40, right: 150, bottom: 60, left: 30},
       width = 500 - margin.left - margin.right,
       height = 420 - margin.top - margin.bottom;
   
   // append the svg object to the body of the page
-  var svg = d3.select("#my_dataviz")
-    .append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
+  var svg = d3.select("#root")
+   .append("div")
+   .classed("svg-container", true) //container class to make it responsive
+   .append("svg")
+   .attr("preserveAspectRatio", "xMinYMin meet")
+   .attr("viewBox", "0 0 600 400")
+   //class to make it responsive
+   .classed("svg-content-responsive", true)
     .append("g")
       .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
@@ -131,7 +151,7 @@
     // // ---------------------------//
   
     // // -1- Create a tooltip div that is hidden by default:
-    var tooltip = d3.select("#my_dataviz")
+    var tooltip = d3.select("#root")
       .append("div")
         .style("opacity", 0)
         .attr("class", "tooltip")
@@ -288,4 +308,5 @@
           .on("mouseleave", noHighlight)
     })
   }
+  createD3Map(simpleTestData);
 </script>
