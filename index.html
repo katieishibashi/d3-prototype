@@ -15,8 +15,12 @@
   <h1>Simple d3 bubble graph</h1>
   <div id="root" class="visible"></div>
   <div class="buttonContainer">
-    <button onclick="createD3Map(simpleTestData)">See chart with simple data</button>
-    <button onclick="createD3Map(testDataWithZ)">See chart with more Complex data</button>
+    <label for="data-select">Choose a value:</label>
+
+    <select name="data" id="data-select">
+        <option selected value="simpleTestData">Simple test data</option>
+        <option value="testDataWithZ">Test data with Z</option>
+    </select>
   </div>
   <!-- A bit of CSS: change stroke color of circle on hover (white -> black) -->
   <style>
@@ -72,20 +76,28 @@
     }
   </style>
   <script>
-    var simpleTestData = './testData.json';
-    var testDataWithZ = './testDataWithZ.json';
+    var srcFiles = {
+     simpleTestData: './testData.json',
+     testDataWithZ: './testDataWithZ.json',
+    }
     var standardSize = 15;
     var isTransitioning = false;
     var $rootDiv = document.querySelector("#root");
-    
+    var $selectMenu = document.querySelector("#data-select");
+
     function toggleClasses() {
       $rootDiv.classList.toggle("hidden");
       $rootDiv.classList.toggle("visible");
-    }
+    };
+
+    $selectMenu.addEventListener('change', (event) => {
+        createD3Map(srcFiles[$selectMenu.value]);
+    });
     
     //Load D3
     function createD3Map(url){
     // Ignore if we're mid-transition
+    console.log("url is", url);
     if (isTransitioning) return;
     // Otherwise, set isTransitioning to true and hide the map
       isTransitioning = true;
@@ -115,14 +127,13 @@
     
     d3.json(url, function(data) {
     
-      console.log(data);
       function getMaxValue(value) {
         return Math.max.apply(Math, data.map(function(obj) { return obj[value]; })) || 0;
       }
       function getMinValue(value) {
         return Math.min.apply(Math, data.map(function(obj) { return obj[value]; })) || 0;
       }
-      console.log(getMinValue("x"),getMaxValue("x"),getMinValue("y"),getMaxValue("y"));
+
       // ---------------------------//
       //       AXIS  AND SCALE      //
       // ---------------------------//
@@ -163,9 +174,11 @@
         .range([ 10, 30]);
     
     
+        var allgroups = [...new Set(data.map(entry => entry.topic))];
+        allGroups = Array.from(allgroups);
       // // Add a scale for bubble color
       var myColor = d3.scaleOrdinal()
-        .domain(["sports", "food", "politics", "styles", "science"])
+        .domain(allgroups)
         .range(d3.schemeSet1);
     
     
@@ -302,9 +315,6 @@
     
       //   // Add one dot in the legend for each name.
         var size = 20
-        var allgroups = [...new Set(data.map(entry => entry.topic))];
-        allGroups = Array.from(allgroups);
-        console.log(allgroups);
         svg.selectAll("myrect")
           .data(allgroups)
           .enter()
@@ -331,7 +341,7 @@
             .on("mouseleave", noHighlight)
       })
     }
-    createD3Map(simpleTestData);
+    createD3Map(srcFiles["simpleTestData"]);
   </script>
 </body>
 
