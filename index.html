@@ -188,10 +188,15 @@
     
     
         var allgroups = ([...new Set(data.map(entry => entry.topic))].sort());
+        // allgroups = allgroups.map(group => makeValidClassname(group));
         var uniqueGroupRegex = /^\S+/gm;
         var clustergroups = [... new Set(allgroups.map(group=> group.match(uniqueGroupRegex)[0]))];
         function getClusterTopic(topic){
           return topic.match(uniqueGroupRegex)[0];
+        }
+        function makeValidClassname(name){
+          var regex = /[^a-zA-Z]+/g;
+          return name.split(regex).join("-");
         }
       // // Add a scale for bubble color
       var myColor = d3.scaleOrdinal()
@@ -249,7 +254,7 @@
         // reduce opacity of all groups
         d3.selectAll(".bubbles").style("opacity", .05)
         // expect the one that is hovered
-        d3.selectAll("."+d).style("opacity", 1)
+        d3.selectAll("."+makeValidClassname(d)).style("opacity", 1)
       }
     
       // And when it is not hovered anymore
@@ -268,7 +273,7 @@
         .data(data)
         .enter()
         .append("circle")
-          .attr("class", function(d) { return "bubbles " + d.topic })
+          .attr("class", function(d) { return "bubbles " + makeValidClassname(d.topic) })
           .attr("cx", function (d) { return x(d[xVal]); } )
           .attr("cy", function (d) { return y(d[yVal]); } )
           .attr("r", function (d) { return z(d.z) || standardSize; } )
@@ -333,7 +338,7 @@
     
     
       //   // Add one dot in the legend for each name.
-        var size = 20
+        var size = 10
         svg.selectAll("myrect")
           .data(allgroups)
           .enter()
@@ -353,7 +358,8 @@
             .attr("x", 390 + size*.8)
             .attr("y", function(d,i){ return i * (size + 5) + (size/2)}) // 100 is where the first dot appears. 25 is the distance between dots
             .style("fill", function(d){ return myColor(getClusterTopic(d))})
-            .text(function(d){ return d})
+            .text(function(d){ return makeValidClassname(d)})
+            .attr("class", function(d){ return d})
             .attr("text-anchor", "left")
             .style("alignment-baseline", "middle")
             .on("mouseover", highlight)
