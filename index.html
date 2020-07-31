@@ -190,7 +190,9 @@
         var allgroups = ([...new Set(data.map(entry => entry.topic))].sort());
         var uniqueGroupRegex = /^\S+/gm;
         var clustergroups = [... new Set(allgroups.map(group=> group.match(uniqueGroupRegex)[0]))];
-        console.log(allgroups, clustergroups);
+        function getClusterTopic(topic){
+          return topic.match(uniqueGroupRegex)[0];
+        }
       // // Add a scale for bubble color
       var myColor = d3.scaleOrdinal()
         .domain(clustergroups)
@@ -270,8 +272,8 @@
           .attr("cx", function (d) { return x(d[xVal]); } )
           .attr("cy", function (d) { return y(d[yVal]); } )
           .attr("r", function (d) { return z(d.z) || standardSize; } )
-          .style("fill", function (d) { return myColor(d.topic.match(uniqueGroupRegex)[0]); } )
-          .style("stroke", function (d) { return myColor(d.topic.match(uniqueGroupRegex)[0]); } )
+          .style("fill", function (d) { return myColor(getClusterTopic(d.topic)); } )
+          .style("stroke", function (d) { return myColor(getClusterTopic(d.topic)); } )
       //   // -3- Trigger the functions for hover
         .on("mouseover", showTooltip )
         .on("mousemove", moveTooltip )
@@ -339,7 +341,7 @@
             .attr("cx", 390)
             .attr("cy", function(d,i){ return 10 + i*(size+5)}) // 100 is where the first dot appears. 25 is the distance between dots
             .attr("r", 7)
-            .style("fill", function(d){ console.log("d here is", d, myColor(d.match(uniqueGroupRegex)[0])) ;return myColor(d.match(uniqueGroupRegex)[0])})
+            .style("fill", function(d){ return myColor(getClusterTopic(d))})
             .on("mouseover", highlight)
             .on("mouseleave", noHighlight)
     
@@ -350,7 +352,7 @@
           .append("text")
             .attr("x", 390 + size*.8)
             .attr("y", function(d,i){ return i * (size + 5) + (size/2)}) // 100 is where the first dot appears. 25 is the distance between dots
-            .style("fill", function(d){ return myColor(d.match(uniqueGroupRegex)[0])})
+            .style("fill", function(d){ return myColor(getClusterTopic(d))})
             .text(function(d){ return d})
             .attr("text-anchor", "left")
             .style("alignment-baseline", "middle")
