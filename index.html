@@ -18,8 +18,10 @@
     <label for="data-select">Choose a value:</label>
 
     <select name="data" id="data-select">
-        <option selected value="simpleTestData">Simple test data</option>
+        <option value="simpleTestData">Simple test data</option>
         <option value="testDataWithZ">Test data with Z</option>
+        <option selected value="audienceDummyData">Audience dummy data</option>
+        <option value="topicsDummyData">Topics dummy data</option>
     </select>
   </div>
   <!-- A bit of CSS: change stroke color of circle on hover (white -> black) -->
@@ -79,8 +81,9 @@
     var srcFiles = {
      simpleTestData: './testData.json',
      testDataWithZ: './testDataWithZ.json',
+     audienceDummyData: './audience_dummy_data.json',
+     topicsDummyData: './topics_dummy_data.json'
     }
-    var standardSize = 15;
     var isTransitioning = false;
     var $rootDiv = document.querySelector("#root");
     var $selectMenu = document.querySelector("#data-select");
@@ -126,7 +129,15 @@
               "translate(" + margin.left + "," + margin.top + ")");
     
     d3.json(url, function(data) {
-    
+      //Make standard dot size based on number of items we're mapping
+      //With a minimum width of 0.5
+      var standardSize = Math.max(100/data.length, 0.5);
+
+      //Deal with the fact that some json uses "x" and some uses "x_coord"
+      var xVal = ("x" in data[0]) ? "x" : "x_coord";
+      var yVal = ("y" in data[0]) ? "y" : "y_coord";
+      console.log(xVal, yVal);
+
       function getMaxValue(value) {
         return Math.max.apply(Math, data.map(function(obj) { return obj[value]; })) || 0;
       }
@@ -140,7 +151,7 @@
     
       // Add X axis
       var x = d3.scaleLinear()
-        .domain([getMinValue("x"), getMaxValue("x")])
+        .domain([getMinValue(xVal), getMaxValue(yVal)])
         .range([ 0, width ]);
       svg.append("g")
         .attr("transform", "translate(0," + height + ")")
@@ -155,7 +166,7 @@
     
       // // Add Y axis
       var y = d3.scaleLinear()
-        .domain([getMinValue("y"), getMaxValue("y")])
+        .domain([getMinValue(yVal), getMaxValue(yVal)])
         .range([ height, 0]);
       svg.append("g")
         .call(d3.axisLeft(y));
@@ -251,8 +262,8 @@
         .enter()
         .append("circle")
           .attr("class", function(d) { return "bubbles " + d.topic })
-          .attr("cx", function (d) { return x(d.x); } )
-          .attr("cy", function (d) { return y(d.y); } )
+          .attr("cx", function (d) { return x(d[xVal]); } )
+          .attr("cy", function (d) { return y(d[yVal]); } )
           .attr("r", function (d) { return z(d.z) || standardSize; } )
           .style("fill", function (d) { return myColor(d.topic); } )
       //   // -3- Trigger the functions for hover
