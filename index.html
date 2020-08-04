@@ -191,11 +191,11 @@
         var uniqueGroupRegex = /[^-]*/i;
         var clustergroups = [... new Set(allgroups.map(group=> group.match(uniqueGroupRegex)[0]))];
         function getClusterTopic(topic){
-          return topic.match(uniqueGroupRegex)[0];
+          return topic.match(uniqueGroupRegex)[0].trim();
         }
         function makeValidClassname(name){
           var regex = /[^a-zA-Z]+/g;
-          return name.split(regex).join("-");
+          return name.trim().split(regex).join("-");
         }
       // // Add a scale for bubble color
       var myColor = d3.scaleOrdinal()
@@ -272,7 +272,7 @@
         .data(data)
         .enter()
         .append("circle")
-          .attr("class", function(d) { return "bubbles " + makeValidClassname(d.topic) })
+          .attr("class", function(d) { return "bubbles " + makeValidClassname(getClusterTopic(d.topic)) })
           .attr("cx", function (d) { return x(d[xVal]); } )
           .attr("cy", function (d) { return y(d[yVal]); } )
           .attr("r", function (d) { return z(d.z) || standardSize; } )
@@ -307,7 +307,7 @@
             .attr("y", function(d,i){ return i * (size + 5) + (size/2)}) // 100 is where the first dot appears. 25 is the distance between dots
             .style("fill", function(d){ return myColor(getClusterTopic(d))})
             .text(function(d){ return d})
-            .attr("class", function(d){ return d})
+            .attr("class", function(d){ return makeValidClassname(d)})
             .attr("text-anchor", "left")
             .style("alignment-baseline", "middle")
             .on("mouseover", highlight)
