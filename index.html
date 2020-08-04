@@ -261,18 +261,34 @@
       // //       HIGHLIGHT GROUP      //
       // // ---------------------------//
     
-      // // What to do when one group is hovered
+      function toggleHighlight(d) {
+        if (d3.selectAll("."+makeValidClassname(d)).style !== "opacity:1"){
+          highlight(d);
+        }
+        else{
+          noHighlight();
+        }
+      }
       var highlight = function(d){
         // reduce opacity of all groups
         d3.selectAll(".bubbles").style("opacity", .05)
-        // expect the one that is hovered
+        // except the one that is hovered
         d3.selectAll("."+makeValidClassname(d)).style("opacity", 1)
       }
     
-      // And when it is not hovered anymore
+      // // And when it is not hovered anymore
       var noHighlight = function(d){
         d3.selectAll(".bubbles").style("opacity", 1)
       }
+
+      //Clicking elsewhere will remove a highlight
+      document.querySelector("body").addEventListener("click", function(e) {
+        console.log(e.target.parentNode, e.target.parentNode.classList.contains("labels-container"));
+        if (!e.target.parentNode.classList.contains("labels-container")){
+          console.log("no highlight");
+          noHighlight();
+        }
+      })
       
     
       // // ---------------------------//
@@ -281,6 +297,7 @@
     
       // // Add dots
       svg.append('g')
+        .attr("class", "dots-container")
         .selectAll("dot")
         .data(data)
         .enter()
@@ -300,7 +317,9 @@
     
       //   // Add one dot in the legend for each name.
         var size = 10
-        svg.selectAll("myrect")
+        svg.append('g')
+        .attr("class", "labels-container")
+        .selectAll("myrect")
           .data(clustergroups)
           .enter()
           .append("circle")
@@ -308,11 +327,12 @@
             .attr("cy", function(d,i){ return 3 + i*(size+5)}) // 100 is where the first dot appears. 25 is the distance between dots
             .attr("r", 7)
             .style("fill", function(d){ return myColor(getClusterTopic(d))})
-            .on("mouseover", highlight)
-            .on("mouseleave", noHighlight)
+            .on("click", toggleHighlight)
     
       //   // Add labels beside legend dots
-        svg.selectAll("mylabels")
+        svg.append('g')
+        .attr("class", "labels-container")
+        .selectAll("mylabels")
           .data(clustergroups)
           .enter()
           .append("text")
@@ -323,8 +343,7 @@
             .attr("class", function(d){ return makeValidClassname(d)})
             .attr("text-anchor", "left")
             .style("alignment-baseline", "middle")
-            .on("mouseover", highlight)
-            .on("mouseleave", noHighlight)
+            .on("click", toggleHighlight)
       })
     }
     createD3Map(srcFiles["audienceDummyData"]);
