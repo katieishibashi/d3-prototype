@@ -8,7 +8,6 @@
   <!-- Load d3.js -->
   <script src="https://d3js.org/d3.v4.js"></script>
   <!-- Load color scale -->
-  <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
   <script src="https://d3js.org/d3-color.v1.min.js"></script>
   <script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
   <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
@@ -189,7 +188,7 @@
     
         var allgroups = ([...new Set(data.map(entry => entry.topic))].sort());
         // allgroups = allgroups.map(group => makeValidClassname(group));
-        var uniqueGroupRegex = /^\S+/gm;
+        var uniqueGroupRegex = /[^-]*/i;
         var clustergroups = [... new Set(allgroups.map(group=> group.match(uniqueGroupRegex)[0]))];
         function getClusterTopic(topic){
           return topic.match(uniqueGroupRegex)[0];
@@ -261,7 +260,7 @@
       var noHighlight = function(d){
         d3.selectAll(".bubbles").style("opacity", 1)
       }
-    
+      
     
       // // ---------------------------//
       // //       CIRCLES              //
@@ -283,64 +282,13 @@
         .on("mouseover", showTooltip )
         .on("mousemove", moveTooltip )
         .on("mouseleave", hideTooltip )
-    
-    
-    
-      //   // ---------------------------//
-      //   //       LEGEND              //
-      //   // ---------------------------//
-    
-      //   // Add legend: circles
-        // var valuesToShow = [10000000, 100000000, 1000000000]
-        // var xCircle = 390
-        // var xLabel = 440
-        // svg
-        //   .selectAll("legend")
-        //   .data(valuesToShow)
-        //   .enter()
-        //   .append("circle")
-        //     .attr("cx", xCircle)
-        //     .attr("cy", function(d){ return height - 100 - z(d) } )
-        //     .attr("r", function(d){ return 15 })
-        //     .style("fill", "none")
-        //     .attr("stroke", "black")
-    
-      //   // Add legend: segments
-        // svg
-        //   .selectAll("legend")
-        //   .data(valuesToShow)
-        //   .enter()
-        //   .append("line")
-        //   .attr('x1', function(d){ return xCircle + z(d) } )
-        //   .attr('x2', xLabel)
-        //   .attr('y1', function(d){ return height - 100 - z(d) } )
-        //   .attr('y2', function(d){ return height - 100 - z(d) } )
-        //   .attr('stroke', 'black')
-        //   .style('stroke-dasharray', ('2,2'))
-    
-      //   // Add legend: labels
-      //   svg
-      //     .selectAll("legend")
-      //     .data(valuesToShow)
-      //     .enter()
-      //     .append("text")
-      //       .attr('x', xLabel)
-      //       .attr('y', function(d){ return height - 100 - z(d) } )
-      //       .text( function(d){ return d/1000000 } )
-      //       .style("font-size", 10)
-      //       .attr('alignment-baseline', 'middle')
-    
-      // //   // Legend title
-      //   svg.append("text")
-      //     .attr('x', xCircle)
-      //     .attr("y", height - 100 +30)
-      //     .text("Population (M)")
+  
     
     
       //   // Add one dot in the legend for each name.
         var size = 10
         svg.selectAll("myrect")
-          .data(allgroups)
+          .data(clustergroups)
           .enter()
           .append("circle")
             .attr("cx", 390)
@@ -352,13 +300,13 @@
     
       //   // Add labels beside legend dots
         svg.selectAll("mylabels")
-          .data(allgroups)
+          .data(clustergroups)
           .enter()
           .append("text")
             .attr("x", 390 + size*.8)
             .attr("y", function(d,i){ return i * (size + 5) + (size/2)}) // 100 is where the first dot appears. 25 is the distance between dots
             .style("fill", function(d){ return myColor(getClusterTopic(d))})
-            .text(function(d){ return makeValidClassname(d)})
+            .text(function(d){ return d})
             .attr("class", function(d){ return d})
             .attr("text-anchor", "left")
             .style("alignment-baseline", "middle")
