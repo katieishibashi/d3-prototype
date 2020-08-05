@@ -191,7 +191,6 @@
     
     
         var allgroups = ([...new Set(data.map(entry => entry.topic))].sort());
-        // allgroups = allgroups.map(group => makeValidClassname(group));
         var uniqueGroupRegex = /[^-]*/i;
         var clustergroups = [... new Set(allgroups.map(group=> group && group.match(uniqueGroupRegex)[0]))];
         function getClusterTopic(topic){
@@ -201,7 +200,6 @@
           var regex = /[^a-zA-Z]+/g;
           return name ? name.trim().split(regex).join("-") : name;
         }
-console.log("all groups are", allgroups, "cluster groups are", clustergroups);
         //Generate a random color
       function getRandomColor() {
         var letters = '0123456789ABCDEF';
@@ -304,10 +302,6 @@ console.log("all groups are", allgroups, "cluster groups are", clustergroups);
         .attr("class", "dots-container")
         .attr("width", "100%")
         .attr("height", "100%")
-        .call(d3.zoom().on("zoom", function () {
-          console.log("shoudl zoom");
-            svg.attr("transform", d3.event.transform);
-        }))
         .append("g")
         .selectAll("dot")
         .data(data)

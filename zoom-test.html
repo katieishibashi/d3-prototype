@@ -15,23 +15,9 @@
     <script src="//d3js.org/d3.v4.min.js"></script>
     <script>
 
-        // Create data
-        function randomData(samples) {
-            var data = [],
-                random = d3.randomNormal();
-                
-            for (i = 0; i < samples; i++) {
-                data.push({
-                    x: random(),
-                    y: random()
-                });
-            }
-            return data;
-        }
-
         // var data = randomData(300);
-        var data = "./tsne_topic_vectors.json";
-        d3.json("./bert_tsne_vectors.json", function(data) {
+        // var data = "./tsne_topic_vectors.json";
+        d3.json("./tsne_topic_vectors.json", function(data) {
 
        
       function getMaxValue(value) {
@@ -48,7 +34,9 @@
 
         var tooltip = d3.select("body").append("div")
             .attr("class", "tooltip")
-            .style("opacity", 0);
+            .text("I am tooltip")
+            .style("border", "1px solid black")
+            .style("opacity", 1);
 
         var x = d3.scaleLinear()  
               .domain([getMinValue("x"), getMaxValue("x")]).nice()       
@@ -70,7 +58,9 @@
                     .attr("width", width + margin.left + margin.right)
                     .attr("height", height + margin.top + margin.bottom)
                     .append("g")
-                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+                    .attr("pointer-events", "all")
+                    .style("background-color", "red");
 
         var clip = svg.append("defs").append("svg:clipPath")
             .attr("id", "clip")
@@ -78,16 +68,80 @@
             .attr("width", width )
             .attr("height", height )
             .attr("x", 0) 
-            .attr("y", 0); 
+            .attr("y", 0)
+            .attr("pointer-events", "all"); 
 
         var xExtent = d3.extent(data, function (d) { return d.x; });
         var yExtent = d3.extent(data, function (d) { return d.y; });
         // x.domain(d3.extent(data, function (d) { return d.x; })).nice();
         // y.domain(d3.extent(data, function (d) { return d.y; })).nice();
 
+     // // ---------------------------//
+      // //      TOOLTIP               //
+      // // ---------------------------//
+    
+      // // -1- Create a tooltip div that is hidden by default:
+    
+      // // -2- Create 3 functions to show / update (when mouse move but stay on same circle) / hide the tooltip
+      var showTooltip = function(d) {
+        tooltip
+          .transition()
+          .duration(200)
+        tooltip
+          .style("opacity", 1)
+          .html("Headline: " + d.headline)
+          .style("left", (d3.mouse(this)[0]+10) + "px")
+          .style("top", (d3.mouse(this)[1]+10) + "px")
+      }
+      var moveTooltip = function(d) {
+        tooltip
+          .style("left", (d3.mouse(this)[0]+10) + "px")
+          .style("top", (d3.mouse(this)[1]+10) + "px")
+      }
+      var hideTooltip = function(d) {
+        tooltip
+          .transition()
+          .duration(200)
+          .style("opacity", 0)
+      }
+        //Format Topics
+        var allgroups = ([...new Set(data.map(entry => entry.topic))].sort());
+        var uniqueGroupRegex = /[^-]*/i;
+        var clustergroups = [... new Set(allgroups.map(group=> group && group.match(uniqueGroupRegex)[0]))];
+        function getClusterTopic(topic){
+          return topic ? topic.match(uniqueGroupRegex)[0].trim() : topic;
+        }
+        function makeValidClassname(name){
+          var regex = /[^a-zA-Z]+/g;
+          return name ? name.trim().split(regex).join("-") : name;
+        }
+        //Generate a random color
+      function getRandomColor() {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+         color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+      }
+      // Get a color for each cluster
+      var colorsArr = [... clustergroups.map(c => getRandomColor()) ];
+      
+      // Assign the colors
+      var myColor = d3.scaleOrdinal()
+        .domain(clustergroups)
+        .range(colorsArr);
+
+
         var scatter = svg.append("g")
              .attr("id", "scatterplot")
+             .attr("pointer-events", "all")
              .attr("clip-path", "url(#clip)");
+            
+             scatter.append("g")
+            .attr("pointer-events", "all")
+            .attr("class", "brush")
+            .call(brush);
             
         scatter.selectAll(".dot")
             .data(data)
@@ -96,8 +150,12 @@
             .attr("r", 4)
             .attr("cx", function (d) { return x(d.x); })
             .attr("cy", function (d) { return y(d.y); })
-            .attr("opacity", 0.5)
-            .style("fill", "#4292c6");
+            .style("fill", function (d) { return myColor(getClusterTopic(d.topic)); } )
+            .style("stroke", function (d) { return myColor(getClusterTopic(d.topic)); } )
+            .attr("pointer-events", "all")
+            .on("mouseover", showTooltip )
+            .on("mousemove", moveTooltip )
+            .on("mouseleave", hideTooltip )
 
         // x axis
         svg.append("g")
@@ -124,10 +182,6 @@
             .attr("dy", "1em")
             .style("text-anchor", "end")
             .text("Y Label");
-
-        scatter.append("g")
-            .attr("class", "brush")
-            .call(brush);
 
         function brushended() {
 
