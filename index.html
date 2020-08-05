@@ -22,8 +22,10 @@
     <select name="data" id="data-select">
         <option value="simpleTestData">Simple test data</option>
         <option value="testDataWithZ">Test data with Z</option>
-        <option selected value="audienceDummyData">Audience dummy data</option>
+        <option value="audienceDummyData">Audience dummy data</option>
         <option value="topicsDummyData">Topics dummy data</option>
+        <option selected value="bertData">Bert bert</option>
+        <option value="tsneData">Tsne</option>
     </select>
   </div>
   <!-- A bit of CSS: change stroke color of circle on hover (white -> black) -->
@@ -83,7 +85,9 @@
      simpleTestData: './testData.json',
      testDataWithZ: './testDataWithZ.json',
      audienceDummyData: './audience_dummy_data.json',
-     topicsDummyData: './topics_dummy_data.json'
+     topicsDummyData: './topics_dummy_data.json',
+     bertData: './bert_tsne_vectors.json',
+     tsneData: './tsne_topic_vectors.json'
     }
     var isTransitioning = false;
     var $rootDiv = document.querySelector("#root");
@@ -189,15 +193,15 @@
         var allgroups = ([...new Set(data.map(entry => entry.topic))].sort());
         // allgroups = allgroups.map(group => makeValidClassname(group));
         var uniqueGroupRegex = /[^-]*/i;
-        var clustergroups = [... new Set(allgroups.map(group=> group.match(uniqueGroupRegex)[0]))];
+        var clustergroups = [... new Set(allgroups.map(group=> group && group.match(uniqueGroupRegex)[0]))];
         function getClusterTopic(topic){
-          return topic.match(uniqueGroupRegex)[0].trim();
+          return topic ? topic.match(uniqueGroupRegex)[0].trim() : topic;
         }
         function makeValidClassname(name){
           var regex = /[^a-zA-Z]+/g;
-          return name.trim().split(regex).join("-");
+          return name ? name.trim().split(regex).join("-") : name;
         }
-
+console.log("all groups are", allgroups, "cluster groups are", clustergroups);
         //Generate a random color
       function getRandomColor() {
         var letters = '0123456789ABCDEF';
@@ -282,13 +286,13 @@
       }
 
       //Clicking elsewhere will remove a highlight
-      document.querySelector("body").addEventListener("click", function(e) {
-        console.log(e.target.parentNode, e.target.parentNode.classList.contains("labels-container"));
-        if (!e.target.parentNode.classList.contains("labels-container")){
-          console.log("no highlight");
-          noHighlight();
-        }
-      })
+      // document.querySelector("body").addEventListener("click", function(e) {
+      //   console.log(e.target.parentNode, e.target.parentNode.classList.contains("labels-container"));
+      //   if (!e.target.parentNode.classList.contains("labels-container")){
+      //     console.log("no highlight");
+      //     noHighlight();
+      //   }
+      // })
       
     
       // // ---------------------------//
@@ -296,8 +300,15 @@
       // // ---------------------------//
     
       // // Add dots
-      svg.append('g')
+      svg.append('svg')
         .attr("class", "dots-container")
+        .attr("width", "100%")
+        .attr("height", "100%")
+        .call(d3.zoom().on("zoom", function () {
+          console.log("shoudl zoom");
+            svg.attr("transform", d3.event.transform);
+        }))
+        .append("g")
         .selectAll("dot")
         .data(data)
         .enter()
@@ -346,7 +357,7 @@
             .on("click", toggleHighlight)
       })
     }
-    createD3Map(srcFiles["audienceDummyData"]);
+    createD3Map(srcFiles["bertData"]);
   </script>
 </body>
 
