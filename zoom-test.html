@@ -26,8 +26,7 @@
       function getMinValue(value) {
         return Math.min.apply(Math, data.map(function(obj) { return obj[value]; })) || 0;
       }
-      console.log(getMaxValue("x"), getMinValue("x"), getMaxValue("y"), getMinValue("y"))
-        console.log("data is", data);
+
         var margin = { top: 20, right: 20, bottom: 30, left: 30 };
         width = 900 - margin.left - margin.right,
         height = 480 - margin.top - margin.bottom;
@@ -36,7 +35,7 @@
             .attr("class", "tooltip")
             .text("I am tooltip")
             .style("border", "1px solid black")
-            .style("opacity", 1);
+            .style("opacity", 1)
 
         var x = d3.scaleLinear()  
               .domain([getMinValue("x"), getMaxValue("x")]).nice()       
@@ -60,7 +59,6 @@
                     .append("g")
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
                     .attr("pointer-events", "all")
-                    .style("background-color", "red");
 
         var clip = svg.append("defs").append("svg:clipPath")
             .attr("id", "clip")
@@ -89,9 +87,8 @@
           .duration(200)
         tooltip
           .style("opacity", 1)
+          .style("color", myColor(getClusterTopic(d.topic)))
           .html("Headline: " + d.headline)
-          .style("left", (d3.mouse(this)[0]+10) + "px")
-          .style("top", (d3.mouse(this)[1]+10) + "px")
       }
       var moveTooltip = function(d) {
         tooltip
@@ -133,20 +130,41 @@
         .range(colorsArr);
 
 
+        function toggleHighlight(d) {
+        if (d3.selectAll("."+makeValidClassname(d)).style !== "opacity:1"){
+          highlight(d);
+        }
+        else{
+          noHighlight();
+        }
+      }
+      var highlight = function(d){
+        // reduce opacity of all groups
+        d3.selectAll(".dot").style("opacity", .05)
+        // except the one that is hovered
+        d3.selectAll("."+makeValidClassname(d)).style("opacity", 1)
+      }
+    
+      // // And when it is not hovered anymore
+      var noHighlight = function(d){
+        d3.selectAll(".dot").style("opacity", 1)
+      }
+
+
         var scatter = svg.append("g")
              .attr("id", "scatterplot")
              .attr("pointer-events", "all")
              .attr("clip-path", "url(#clip)");
             
-             scatter.append("g")
+        scatter.append("g")
             .attr("pointer-events", "all")
             .attr("class", "brush")
             .call(brush);
-            
+
         scatter.selectAll(".dot")
             .data(data)
           .enter().append("circle")
-            .attr("class", "dot")
+            .attr("class", function(d) { console.log("d is", d); return "dot " + makeValidClassname(getClusterTopic(d.topic)) })
             .attr("r", 4)
             .attr("cx", function (d) { return x(d.x); })
             .attr("cy", function (d) { return y(d.y); })
@@ -154,8 +172,28 @@
             .style("stroke", function (d) { return myColor(getClusterTopic(d.topic)); } )
             .attr("pointer-events", "all")
             .on("mouseover", showTooltip )
-            .on("mousemove", moveTooltip )
-            .on("mouseleave", hideTooltip )
+            // .on("mousemove", moveTooltip )
+            // .on("mouseleave", hideTooltip )
+
+    
+      //   // Add labels beside legend dots
+        d3.select("body")
+            .append("div")
+            .attr("class", "labels")
+            .selectAll("mylabels")
+            .data(clustergroups)
+            .enter()
+                .append("span")
+                .attr("class", function(d){ return makeValidClassname(d)})
+                .text(function(d){ return d + " "})
+                .style("color", function(d){ return myColor(getClusterTopic(d))})
+                .style("cursor", "pointer")
+                .on("click", toggleHighlight)
+        
+        d3.select("body")
+        .append("button")
+                .text("Reset highlight")
+                .on("click", noHighlight )
 
         // x axis
         svg.append("g")
@@ -188,8 +226,10 @@
             var s = d3.event.selection;
             if (!s) {
                 if (!idleTimeout) return idleTimeout = setTimeout(idled, idleDelay);
-                x.domain(d3.extent(data, function (d) { return d.x; })).nice();
-                y.domain(d3.extent(data, function (d) { return d.y; })).nice();
+                x.domain([getMinValue("x"), getMaxValue("x")]).nice()       
+                 .range([0, width]);
+                y.domain([getMinValue("y"), getMaxValue("y")]).nice()
+                .range([height, 0]);
             } else {
                 
                 x.domain([s[0][0], s[1][0]].map(x.invert, x));
