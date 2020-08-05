@@ -1,0 +1,357 @@
+
+
+<!-- Code from d3-graph-gallery.com -->
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <title>Hello</title>
+  <!-- Load d3.js -->
+  <script src="https://d3js.org/d3.v4.js"></script>
+  <!-- Load color scale -->
+  <script src="https://d3js.org/d3-color.v1.min.js"></script>
+  <script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+  <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+</head>
+<body>
+  <!-- Create a div where the graph will take place -->
+  <h1>Simple d3 bubble graph</h1>
+  <div id="root" class="visible"></div>
+  <div class="buttonContainer">
+    <label for="data-select">Choose a value:</label>
+
+    <select name="data" id="data-select">
+        <option value="simpleTestData">Simple test data</option>
+        <option value="testDataWithZ">Test data with Z</option>
+        <option value="audienceDummyData">Audience dummy data</option>
+        <option value="topicsDummyData">Topics dummy data</option>
+        <option selected value="bertData">Bert bert</option>
+        <option value="tsneData">Tsne</option>
+    </select>
+  </div>
+  <!-- A bit of CSS: change stroke color of circle on hover (white -> black) -->
+  <style>
+    .bubbles {
+    stroke-width: 1px;
+    opacity: .8
+    }
+    .bubbles:hover {
+    stroke: black;
+    }
+    .visible
+    {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 0.6s linear;
+    }                
+    /* Fade-Out Effect */
+    .hidden
+    {
+    visibility: hidden;
+    opacity: 0;
+    /* transition: visibility 0s 0.3s, opacity 0.3s linear; */
+    }   
+    .svg-container {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    padding-bottom: 75%; /* aspect ratio */
+    vertical-align: top;
+    overflow: hidden;
+    max-width:700px;
+    min-height:320px;
+    }
+    @media (min-width:700px){
+    .svg-container {
+    padding-bottom:50%;
+    }
+    }
+    .svg-content-responsive {
+    display: inline-block;
+    position: absolute;
+    top: 10px;
+    left: 0;
+    }
+    @media (min-width:700px){
+    .buttonContainer{
+    position:absolute;
+    max-width:150px;
+    left: calc(700px - 150px);
+    top:40px;
+    }
+    }
+  </style>
+  <script>
+    var srcFiles = {
+     simpleTestData: './testData.json',
+     testDataWithZ: './testDataWithZ.json',
+     audienceDummyData: './audience_dummy_data.json',
+     topicsDummyData: './topics_dummy_data.json',
+     bertData: './bert_tsne_vectors.json',
+     tsneData: './tsne_topic_vectors.json'
+    }
+    var isTransitioning = false;
+    var $rootDiv = document.querySelector("#root");
+    var $selectMenu = document.querySelector("#data-select");
+
+    function toggleClasses() {
+      $rootDiv.classList.toggle("hidden");
+      $rootDiv.classList.toggle("visible");
+    };
+
+    $selectMenu.addEventListener('change', (event) => {
+        createD3Map(srcFiles[$selectMenu.value]);
+    });
+    
+    //Load D3
+    function createD3Map(url){
+    // Ignore if we're mid-transition
+    console.log("url is", url);
+    if (isTransitioning) return;
+    // Otherwise, set isTransitioning to true and hide the map
+      isTransitioning = true;
+      toggleClasses();
+      // Wipe out the map we had
+      $rootDiv.innerHTML="";
+      //When the transition is over, fade the map back in 
+      setTimeout(function(){ isTransitioning = false; toggleClasses();}, 600);
+    
+    // set the dimensions and margins of the graph
+    var margin = {top: 40, right: 150, bottom: 30, left: 20},
+        width = 500 - margin.left - margin.right,
+        height = 420 - margin.top - margin.bottom;
+    
+    // append the svg object to the body of the page
+    var svg = d3.select("#root")
+     .append("div")
+     .classed("svg-container", true) //container class to make it responsive
+     .append("svg")
+     .attr("preserveAspectRatio", "xMinYMin meet")
+     .attr("viewBox", "0 0 600 435")
+     //class to make it responsive
+     .classed("svg-content-responsive", true)
+      .append("g")
+        .attr("transform",
+              "translate(" + margin.left + "," + margin.top + ")");
+    
+    d3.json(url, function(data) {
+      //Make standard dot size based on number of items we're mapping
+      //With a minimum width of 0.5
+      var standardSize = Math.max(100/data.length, 0.5);
+
+      //Deal with the fact that some json uses "x" and some uses "x_coord"
+      var xVal = ("x" in data[0]) ? "x" : "x_coord";
+      var yVal = ("y" in data[0]) ? "y" : "y_coord";
+      console.log(xVal, yVal);
+
+      function getMaxValue(value) {
+        return Math.max.apply(Math, data.map(function(obj) { return obj[value]; })) || 0;
+      }
+      function getMinValue(value) {
+        return Math.min.apply(Math, data.map(function(obj) { return obj[value]; })) || 0;
+      }
+
+      // ---------------------------//
+      //       AXIS  AND SCALE      //
+      // ---------------------------//
+    
+      // Add X axis
+      var x = d3.scaleLinear()
+        .domain([getMinValue(xVal), getMaxValue(yVal)])
+        .range([ 0, width ]);
+      svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x).ticks(3));
+    
+      // // Add X axis label:
+      svg.append("text")
+          .attr("text-anchor", "end")
+          .attr("x", width)
+          .attr("y", height+40 )
+          .text("X Value");
+    
+      // // Add Y axis
+      var y = d3.scaleLinear()
+        .domain([getMinValue(yVal), getMaxValue(yVal)])
+        .range([ height, 0]);
+      svg.append("g")
+        .call(d3.axisLeft(y));
+    
+      // // Add Y axis label:
+      svg.append("text")
+          .attr("text-anchor", "end")
+          .attr("x", 0)
+          .attr("y", -20 )
+          .text("Y value")
+          .attr("text-anchor", "start")
+    
+      // // Add a scale for bubble size
+      var z = d3.scaleSqrt()
+        .domain([200000, 1310000000])
+        .range([ 10, 30]);
+    
+    
+        var allgroups = ([...new Set(data.map(entry => entry.topic))].sort());
+        var uniqueGroupRegex = /[^-]*/i;
+        var clustergroups = [... new Set(allgroups.map(group=> group && group.match(uniqueGroupRegex)[0]))];
+        function getClusterTopic(topic){
+          return topic ? topic.match(uniqueGroupRegex)[0].trim() : topic;
+        }
+        function makeValidClassname(name){
+          var regex = /[^a-zA-Z]+/g;
+          return name ? name.trim().split(regex).join("-") : name;
+        }
+        //Generate a random color
+      function getRandomColor() {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+         color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+      }
+      // Get a color for each cluster
+      var colorsArr = [... clustergroups.map(c => getRandomColor()) ];
+      
+      // Assign the colors
+      var myColor = d3.scaleOrdinal()
+        .domain(clustergroups)
+        .range(colorsArr);
+
+    
+    
+      // // ---------------------------//
+      // //      TOOLTIP               //
+      // // ---------------------------//
+    
+      // // -1- Create a tooltip div that is hidden by default:
+      var tooltip = d3.select("#root")
+        .append("div")
+          .style("opacity", 0)
+          .attr("class", "tooltip")
+          .style("background-color", "black")
+          .style("border-radius", "5px")
+          .style("padding", "10px")
+          .style("color", "white")
+          .style("max-width", "100px")
+          .style("position", "absolute")
+    
+      // // -2- Create 3 functions to show / update (when mouse move but stay on same circle) / hide the tooltip
+      var showTooltip = function(d) {
+        tooltip
+          .transition()
+          .duration(200)
+        tooltip
+          .style("opacity", 1)
+          .html("Headline: " + d.headline)
+          .style("left", (d3.mouse(this)[0]+10) + "px")
+          .style("top", (d3.mouse(this)[1]+10) + "px")
+      }
+      var moveTooltip = function(d) {
+        tooltip
+          .style("left", (d3.mouse(this)[0]+10) + "px")
+          .style("top", (d3.mouse(this)[1]+10) + "px")
+      }
+      var hideTooltip = function(d) {
+        tooltip
+          .transition()
+          .duration(200)
+          .style("opacity", 0)
+      }
+    
+    
+      // // ---------------------------//
+      // //       HIGHLIGHT GROUP      //
+      // // ---------------------------//
+    
+      function toggleHighlight(d) {
+        if (d3.selectAll("."+makeValidClassname(d)).style !== "opacity:1"){
+          highlight(d);
+        }
+        else{
+          noHighlight();
+        }
+      }
+      var highlight = function(d){
+        // reduce opacity of all groups
+        d3.selectAll(".bubbles").style("opacity", .05)
+        // except the one that is hovered
+        d3.selectAll("."+makeValidClassname(d)).style("opacity", 1)
+      }
+    
+      // // And when it is not hovered anymore
+      var noHighlight = function(d){
+        d3.selectAll(".bubbles").style("opacity", 1)
+      }
+
+      //Clicking elsewhere will remove a highlight
+      // document.querySelector("body").addEventListener("click", function(e) {
+      //   console.log(e.target.parentNode, e.target.parentNode.classList.contains("labels-container"));
+      //   if (!e.target.parentNode.classList.contains("labels-container")){
+      //     console.log("no highlight");
+      //     noHighlight();
+      //   }
+      // })
+      
+    
+      // // ---------------------------//
+      // //       CIRCLES              //
+      // // ---------------------------//
+    
+      // // Add dots
+      svg.append('svg')
+        .attr("class", "dots-container")
+        .attr("width", "100%")
+        .attr("height", "100%")
+        .append("g")
+        .selectAll("dot")
+        .data(data)
+        .enter()
+        .append("circle")
+          .attr("class", function(d) { return "bubbles " + makeValidClassname(getClusterTopic(d.topic)) })
+          .attr("cx", function (d) { return x(d[xVal]); } )
+          .attr("cy", function (d) { return y(d[yVal]); } )
+          .attr("r", function (d) { return z(d.z) || standardSize; } )
+          .style("fill", function (d) { return myColor(getClusterTopic(d.topic)); } )
+          .style("stroke", function (d) { return myColor(getClusterTopic(d.topic)); } )
+      //   // -3- Trigger the functions for hover
+        .on("mouseover", showTooltip )
+        .on("mousemove", moveTooltip )
+        .on("mouseleave", hideTooltip )
+  
+    
+    
+      //   // Add one dot in the legend for each name.
+        var size = 10
+        svg.append('g')
+        .attr("class", "labels-container")
+        .selectAll("myrect")
+          .data(clustergroups)
+          .enter()
+          .append("circle")
+            .attr("cx", 390)
+            .attr("cy", function(d,i){ return 3 + i*(size+5)}) // 100 is where the first dot appears. 25 is the distance between dots
+            .attr("r", 7)
+            .style("fill", function(d){ return myColor(getClusterTopic(d))})
+            .on("click", toggleHighlight)
+    
+      //   // Add labels beside legend dots
+        svg.append('g')
+        .attr("class", "labels-container")
+        .selectAll("mylabels")
+          .data(clustergroups)
+          .enter()
+          .append("text")
+            .attr("x", 390 + size*.8)
+            .attr("y", function(d,i){ return i * (size + 5) + (size/2)}) // 100 is where the first dot appears. 25 is the distance between dots
+            .style("fill", function(d){ return myColor(getClusterTopic(d))})
+            .text(function(d){ return d})
+            .attr("class", function(d){ return makeValidClassname(d)})
+            .attr("text-anchor", "left")
+            .style("alignment-baseline", "middle")
+            .on("click", toggleHighlight)
+      })
+    }
+    createD3Map(srcFiles["bertData"]);
+  </script>
+</body>
+
