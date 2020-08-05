@@ -17,7 +17,9 @@
 
         // var data = randomData(300);
         // var data = "./tsne_topic_vectors.json";
-        d3.json("./tsne_topic_vectors.json", function(data) {
+        fetch('http://nybert-dot-nyt-bigquery-beta-workspace.appspot.com/bert')
+        .then(response => response.json())
+        d3.json("./bert_tsne_vectors.json", function(data) {
 
        
       function getMaxValue(value) {
