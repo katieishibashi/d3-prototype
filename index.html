@@ -16,6 +16,9 @@
     .labels{
     margin-left:40px;
     }
+    .dot{
+      fill: blue;
+    }
   </style>
   <div class="headline"></div>
   <div class="menu"></div>
@@ -23,22 +26,10 @@
   <div class="labels"></div>
 </head>
 <body>
-  <script src="//d3js.org/d3.v4.min.js"></script>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
   <script>
-    fetch('http://nybert-dot-nyt-bigquery-beta-workspace.appspot.com/bert', {
-      mode:"no-cors"
-    })
-    .then(response => response.json())
-    .then(data => {
-      console.log('Success:', data);
-      loadD3(data);
-    })
-    .catch((error) => {
-      console.error('Error:', error);
-    })
-       
-    function loadD3(fetchedData){
-      d3.json(fetchedData, function(data) {
+
+      d3.json('http://nybert-dot-nyt-bigquery-beta-workspace.appspot.com/bert', function(data) {
     
     
       function getMaxValue(value) {
@@ -258,6 +249,6 @@
           .attr("cy", function (d) { return y(d.y); });
       }
       });
-    }
+    // }
   </script>
 </body>
